@@ -1,0 +1,16 @@
+aws_region   = "sa-east-1"
+project_name = "tech-challenge"
+environment  = "homolog"
+
+db_name     = "techbase"
+db_username = "techdev"
+# Nunca committe a senha real — use este arquivo local ou TF_VAR_db_password no CI
+db_password = "CHANGE-ME-strong-password"
+
+db_instance_class    = "db.t4g.micro"
+db_allocated_storage = 20
+db_engine_version    = "16.6"
+db_multi_az          = false
+db_publicly_accessible = false
+
+# allowed_cidr_blocks = ["X.X.X.X/32"]  # opcional: seu IP para debug via bastion/VPN
