@@ -53,9 +53,10 @@ variable "db_allocated_storage" {
 }
 
 variable "db_engine_version" {
-  description = "Versão preferida do PostgreSQL no RDS (major ou major.minor). A versão efetiva é resolvida via data source na região."
+  description = "Pin opcional da versão Postgres (ex.: \"15.7\"). null = usar a mais recente oferecida na conta/região (recomendado no AWS Academy)."
   type        = string
-  default     = "16"
+  default     = null
+  nullable    = true
 }
 
 variable "db_multi_az" {

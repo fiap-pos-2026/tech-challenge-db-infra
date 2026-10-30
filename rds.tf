@@ -1,22 +1,10 @@
-# Resolve uma versão de Postgres realmente oferecida na região/conta
-# (ex.: Academy pode não ter 16.6 — InvalidParameterCombination).
-# preferred_versions não pode ser combinado com version no data source.
+# Versão efetivamente oferecida na região/conta (Learner Lab costuma
+# não ter a mesma matriz de minors da conta comercial — preferred_versions
+# fixas falham com "no RDS engine versions match").
+# `version = null` omite o filtro → provider devolve a mais recente disponível.
 data "aws_rds_engine_version" "postgres" {
-  engine = "postgres"
-
-  preferred_versions = [
-    var.db_engine_version,
-    "16.8",
-    "16.6",
-    "16.4",
-    "16.3",
-    "16.2",
-    "16",
-    "15.12",
-    "15.10",
-    "15.8",
-    "15.7",
-  ]
+  engine  = "postgres"
+  version = var.db_engine_version
 }
 
 locals {
