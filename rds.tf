@@ -1,7 +1,5 @@
-# Versão efetivamente oferecida na região/conta (Learner Lab costuma
-# não ter a mesma matriz de minors da conta comercial — preferred_versions
-# fixas falham com "no RDS engine versions match").
-# `version = null` omite o filtro → provider devolve a mais recente disponível.
+# Console Academy mostra "PostgreSQL 18.6-R1"; na API o engine_version é "18.6".
+# Sem pin, o data source devolve o *default* da conta (ex.: 18.3), não o mais novo.
 data "aws_rds_engine_version" "postgres" {
   engine  = "postgres"
   version = var.db_engine_version
