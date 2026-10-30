@@ -10,7 +10,7 @@ db_password = "CHANGE-ME-strong-password"
 
 db_instance_class    = "db.t4g.micro"
 db_allocated_storage = 20
-db_engine_version    = "16.6"
+db_engine_version    = "16"
 db_multi_az          = false
 db_publicly_accessible = false
 

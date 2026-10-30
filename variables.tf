@@ -53,9 +53,9 @@ variable "db_allocated_storage" {
 }
 
 variable "db_engine_version" {
-  description = "Versão do PostgreSQL no RDS"
+  description = "Versão preferida do PostgreSQL no RDS (major ou major.minor). A versão efetiva é resolvida via data source na região."
   type        = string
-  default     = "16.6"
+  default     = "16"
 }
 
 variable "db_multi_az" {

@@ -1,3 +1,29 @@
+# Resolve uma versão de Postgres realmente oferecida na região/conta
+# (ex.: Academy pode não ter 16.6 — InvalidParameterCombination).
+# preferred_versions não pode ser combinado com version no data source.
+data "aws_rds_engine_version" "postgres" {
+  engine = "postgres"
+
+  preferred_versions = [
+    var.db_engine_version,
+    "16.8",
+    "16.6",
+    "16.4",
+    "16.3",
+    "16.2",
+    "16",
+    "15.12",
+    "15.10",
+    "15.8",
+    "15.7",
+  ]
+}
+
+locals {
+  postgres_engine_version = data.aws_rds_engine_version.postgres.version
+  postgres_family         = data.aws_rds_engine_version.postgres.parameter_group_family
+}
+
 resource "aws_db_subnet_group" "main" {
   name       = "${local.name_prefix}-db-subnets"
   subnet_ids = aws_subnet.private[*].id
@@ -8,8 +34,8 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_db_parameter_group" "postgres" {
-  name   = "${local.name_prefix}-pg16"
-  family = "postgres16"
+  name   = "${local.name_prefix}-${replace(local.postgres_family, "_", "-")}"
+  family = local.postgres_family
 
   parameter {
     name  = "log_min_duration_statement"
@@ -17,7 +43,7 @@ resource "aws_db_parameter_group" "postgres" {
   }
 
   tags = {
-    Name = "${local.name_prefix}-pg16"
+    Name = "${local.name_prefix}-${local.postgres_family}"
   }
 }
 
@@ -25,7 +51,7 @@ resource "aws_db_instance" "postgres" {
   identifier = "${local.name_prefix}-postgres"
 
   engine                = "postgres"
-  engine_version        = var.db_engine_version
+  engine_version        = local.postgres_engine_version
   instance_class        = var.db_instance_class
   allocated_storage     = var.db_allocated_storage
   max_allocated_storage = var.db_allocated_storage * 2
