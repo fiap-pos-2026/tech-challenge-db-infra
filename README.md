@@ -1,73 +1,61 @@
 # tech-challenge-db-infra
 
-Infraestrutura como código do **banco de dados gerenciado** da Fase 3 (The Java Garage).
+Terraform da rede e do PostgreSQL gerenciado (RDS) usados pela oficina na nuvem.
 
-Provisiona via **Terraform**:
+O que sobe aqui:
 
-- VPC com subnets públicas e privadas (compartilhada com o EKS via remote state)
-- **Amazon RDS PostgreSQL** em subnets privadas
-- Security group restringindo acesso à porta 5432
-- Outputs: endpoint, porta, VPC/subnet IDs, secret ARN (senha)
+- VPC com subnets públicas e privadas
+- RDS PostgreSQL (hoje na 18.6)
+- Security group na porta 5432
+- Outputs para o cluster EKS e para a aplicação (endpoint, JDBC, IDs de rede)
+
+O EKS fica no repositório [tech-challenge-k8s-infra](https://github.com/fiap-pos-2026/tech-challenge-k8s-infra). A aplicação está em [tech-challenge-core](https://github.com/fiap-pos-2026/tech-challenge-core).
 
 ## Stack
 
-| Item | Escolha |
+| Item | Valor |
 |---|---|
-| Nuvem | AWS (`sa-east-1` por padrão) |
-| Banco | RDS PostgreSQL 16 |
+| Nuvem | AWS (`us-east-1` no lab da FIAP) |
+| Banco | RDS PostgreSQL 18.6 |
 | IaC | Terraform ≥ 1.6 |
-| Backend | S3 + DynamoDB (lock) — configurar antes do primeiro `apply` |
+| State | S3 + DynamoDB (lock) |
 
-Repositórios irmãos: [core](https://github.com/fiap-pos-2026/tech-challenge-core) · [k8s-infra](https://github.com/fiap-pos-2026/tech-challenge-k8s-infra) · [auth-lambda](https://github.com/fiap-pos-2026/tech-challenge-auth-lambda)
+No lab da academia, o login via OIDC no GitHub Actions não funciona. Usamos as chaves temporárias do **Start Lab** (incluindo `AWS_SESSION_TOKEN`) e renovamos a cada sessão.
 
-```text
-┌─────────────┐     ┌──────────────────┐
-│  EKS / App  │────►│  RDS PostgreSQL  │
-│  Lambda     │     │  (private subnet)│
-└─────────────┘     └──────────────────┘
-        ▲                     ▲
-        └──── VPC (este repo) ┘
+## Outputs
+
+Este repositório é público. Por isso **não** colocamos endpoints, IDs de VPC/subnet/SG nem senha no README.
+
+Depois do apply:
+
+```bash
+terraform output
 ```
 
-## Pré-requisitos
+No GitHub Actions, os mesmos valores aparecem no final do job de apply. JDBC, usuário e senha do banco vão para o time só por canal privado.
 
-1. Conta AWS com créditos estudante e credenciais configuradas (`aws configure` ou OIDC no CI).
-2. Terraform ≥ 1.6.
-3. Bucket S3 + tabela DynamoDB para o backend (criar uma vez; ver `backend.hcl.example`).
+## Como rodar local
 
-## Uso local
+1. Lab ligado e CLI configurada.
+2. Copie os exemplos e preencha bucket, tabela de lock e senha do banco:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
-# edite db_password (forte) e project_name se quiser
-
 cp backend.hcl.example backend.hcl
-# edite bucket / dynamodb_table / region
-
 terraform init -backend-config=backend.hcl
 terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
 ```
 
-**Não commitar** `terraform.tfvars`, `backend.hcl` nem `*.tfstate`.
+Não commite `terraform.tfvars`, `backend.hcl` nem arquivos de state.
 
-## Outputs úteis para outros repos
+## CI
 
-| Output | Consumidor |
-|---|---|
-| `vpc_id`, `private_subnet_ids`, `public_subnet_ids` | `tech-challenge-k8s-infra` (EKS na mesma VPC) |
-| `rds_endpoint`, `rds_port`, `db_name` | `tech-challenge-core` / Lambda (conexão JDBC) |
-| `rds_security_group_id` | liberar SG do EKS/Lambda na porta 5432 |
+PR em `main`: fmt, validate e plan.  
+Push em `main`: apply no environment `homolog`.
 
-## CI/CD
+Secrets no repositório (só no GitHub, nunca no código): access key, secret, session token, bucket, tabela de lock e `TF_VAR_DB_PASSWORD`.
 
-Workflow em `.github/workflows/terraform.yml`:
+## Custo
 
-- **PR → main:** `fmt` + `validate` + `plan`
-- **Push main / workflow_dispatch:** `apply` (ambiente homolog; prod via environment GitHub)
-
-Secrets necessários no repositório: `AWS_ROLE_ARN` (OIDC) ou access keys; `TF_VAR_db_password`.
-
-## Custos
-
-RDS + NAT Gateway consomem créditos. Use `terraform destroy` fora de períodos de demo e configure **AWS Budgets**.
+O que mais pesa aqui é o **NAT Gateway**, além do RDS. Se ninguém for usar o ambiente, faça `terraform destroy`. No lab, olhe o crédito restante no portal antes de deixar tudo ligado overnight.
