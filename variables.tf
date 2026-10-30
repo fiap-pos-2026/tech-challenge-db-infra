@@ -53,9 +53,10 @@ variable "db_allocated_storage" {
 }
 
 variable "db_engine_version" {
-  description = "Versão do PostgreSQL no RDS"
+  description = "Versão do Postgres no RDS (API: major.minor, sem sufixo -R1 do console). Academy Learner Lab: 18.6. null = default da conta (pode ser minor mais antigo)."
   type        = string
-  default     = "16.6"
+  default     = "18.6"
+  nullable    = true
 }
 
 variable "db_multi_az" {
