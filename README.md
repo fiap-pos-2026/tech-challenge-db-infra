@@ -34,6 +34,8 @@ flowchart TB
 
 O EKS fica no repositório [tech-challenge-k8s-infra](https://github.com/fiap-pos-2026/tech-challenge-k8s-infra). A aplicação está em [tech-challenge-core](https://github.com/fiap-pos-2026/tech-challenge-core).
 
+Decisões relacionadas: [RFC-001 — nuvem AWS](https://github.com/fiap-pos-2026/tech-challenge-core/blob/main/docs/arquitetura/rfc/RFC-001-nuvem-aws.md), [ADR-006 — RDS PostgreSQL](https://github.com/fiap-pos-2026/tech-challenge-core/blob/main/docs/arquitetura/adr/ADR-006-banco-gerenciado-rds.md), [ADR-001 — quatro repositórios](https://github.com/fiap-pos-2026/tech-challenge-core/blob/main/docs/arquitetura/adr/ADR-001-quatro-repositorios.md). Índice completo em [`docs/arquitetura`](https://github.com/fiap-pos-2026/tech-challenge-core/blob/main/docs/arquitetura/README.md) no core.
+
 ## Stack
 
 | Item | Valor |
