@@ -9,6 +9,29 @@ O que sobe aqui:
 - Security group na porta 5432
 - Outputs para o cluster EKS e para a aplicação (endpoint, JDBC, IDs de rede)
 
+```mermaid
+flowchart TB
+  Internet(("Internet"))
+  subgraph vpc["VPC (2 AZs)"]
+    IGW["Internet Gateway"]
+    subgraph pub["Subnets públicas (AZ a / AZ b)"]
+      NAT["NAT Gateway<br/>(1, na AZ a)"]
+    end
+    subgraph priv["Subnets privadas (AZ a / AZ b)"]
+      RDS[("RDS PostgreSQL 18<br/>db.t4g.micro · criptografado<br/>backup automático")]
+      Consumers["nodes do EKS · Lambda de auth<br/>(criados nos outros repos)"]
+    end
+    SG{{"SG do RDS<br/>5432 a partir da VPC"}}
+  end
+  State[("S3 + DynamoDB<br/>state e lock do Terraform")]
+
+  Internet <--> IGW
+  IGW --- NAT
+  Consumers -->|"saída para internet"| NAT
+  Consumers -->|"5432"| SG --> RDS
+  State -.-|"remote state lido por k8s-infra e auth-lambda"| vpc
+```
+
 O EKS fica no repositório [tech-challenge-k8s-infra](https://github.com/fiap-pos-2026/tech-challenge-k8s-infra). A aplicação está em [tech-challenge-core](https://github.com/fiap-pos-2026/tech-challenge-core).
 
 ## Stack
